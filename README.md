@@ -48,10 +48,10 @@ Búsqueda secuencial
 Este método recorre `users.dat` desde el inicio hasta encontrar la cédula buscada.
 Es más simple de implementar, pero con muchos registros suele ser más lento.
 Estado del proyecto
-✅ Compilación exitosa sin errores.
-✅ Funcionalidad completa de registro y búsqueda.
-✅ Manejo robusto de archivos data/ (validación de integridad).
-✅ Comparación de tiempos (Hashing vs Búsqueda secuencial).
+- Compilación exitosa sin errores.
+- Funcionalidad completa de registro y búsqueda.
+- Manejo robusto de archivos data/ (validación de integridad).
+- Comparación de tiempos (Hashing vs Búsqueda secuencial).
 
 Cambios recientes (última actualización)
 - **Corrección de literales de string:** Se arreglaron saltos de línea partidos en el menú y resultados de búsqueda.
