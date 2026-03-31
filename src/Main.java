@@ -55,7 +55,8 @@ public class Main {
             System.out.println("2. Buscar usuario");
             System.out.println("3. Mostrar estado del hash");
             System.out.println("4. Reiniciar archivos");
-            System.out.println("5. Salir");
+            System.out.println("5. Generar usuarios automáticamente");
+            System.out.println("6. Salir");
             System.out.print("Opción: ");
 
             String opcion = sc.nextLine().trim();
@@ -67,7 +68,8 @@ public class Main {
                     hashing.resetFiles();
                     System.out.println("Archivos reiniciados correctamente.");
                 }
-                case "5" -> {
+                case "5" -> generarUsuariosMenu();
+                case "6" -> {
                     System.out.println("Saliendo...");
                     return;
                 }
@@ -127,6 +129,43 @@ public class Main {
             System.out.printf("Tiempo búsqueda (Secuencial): %.4f ms%n", tiempoSecMs);
         } catch (IOException e) {
             System.out.println("Error al buscar: " + e.getMessage());
+        }
+    }
+
+    private static void generarUsuariosMenu() {
+        try {
+            System.out.print("Cantidad de usuarios a generar: ");
+            int cantidad = Integer.parseInt(sc.nextLine().trim());
+
+            if (cantidad <= 0) {
+                System.out.println("Ingrese un número válido.");
+                return;
+            }
+
+            generarUsuarios(cantidad);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Número inválido.");
+        }
+    }
+
+    private static void generarUsuarios(int cantidad) {
+        try {
+            long baseCc = 10000L;
+
+            for (int i = 1; i <= cantidad; i++) {
+                long cc = baseCc + i;
+                String nombre = "Usuario" + i;
+                String correo = "usuario" + i + "@mail.com";
+
+                Usuario u = new Usuario(cc, nombre, correo);
+                hashing.insertar(u);
+            }
+
+            System.out.println(cantidad + " usuarios generados correctamente.");
+
+        } catch (Exception e) {
+            System.out.println("Error generando usuarios: " + e.getMessage());
         }
     }
 
