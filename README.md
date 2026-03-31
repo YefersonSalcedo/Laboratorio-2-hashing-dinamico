@@ -1,8 +1,11 @@
 Laboratorio #2 - Hashing Dinámico vs Búsqueda Secuencial
 
 Integrantes:
+
 Jonathan Alzate
+
 Yeferson Alexis Salcedo
+
 Samuel Velásquez Berrio
 
 
