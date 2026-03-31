@@ -231,7 +231,8 @@ public class ExtendibleHashing {
      *      para leer nombre y correo.
      *
      * La ventaja frente a la búsqueda secuencial es que nunca lee más de
-     * BUCKET_SIZE registros del índice, independientemente del total de usuarios.
+     * BUCKET_SIZE entradas del índice, independientemente del total de usuarios
+     * registrados, siempre que la función hash distribuya bien los registros.
      *
      * @param ccBuscada número de cédula a localizar
      * @return Usuario encontrado, o null si no existe.
@@ -246,24 +247,24 @@ public class ExtendibleHashing {
 
             bkts.seek(bucketOffset);
 
-            // Calcular el tamaño del bucket en bytes y leerlo de golpe
-            // localDepth (8) + count (8) + BUCKET_SIZE * (cc + offset) (8+8 cada slot)
-            int bucketBytes = 8 + 8 + BUCKET_SIZE * 16;
-            byte[] buf = new byte[bucketBytes];
-            bkts.readFully(buf);  // UNA sola syscall
+            // tomamos el tamaño del bucket en bytes y leerlo de golpe:
+            byte[] buf = new byte[(int) BUCKET_BYTES];
+            bkts.readFully(buf); // UNA sola syscall — evita múltiples accesos al disco
 
-            // Parsear desde el buffer en memoria
+            // Envolver el buffer en un DataInputStream para leer los campos
+            // del bucket (localDepth, count, slots) sin más accesos al disco
             DataInputStream dis = new DataInputStream(
                 new java.io.ByteArrayInputStream(buf)
             );
-            dis.readLong();           // saltar localDepth
-            long count = dis.readLong();
+            dis.readLong();        // saltar localDepth (no se necesita en la búsqueda)
+            long count = dis.readLong(); // número de slots ocupados en este bucket
 
             for (int i = 0; i < count; i++) {
-                long cc           = dis.readLong();
-                long recordOffset = dis.readLong();
+                long cc           = dis.readLong(); // cédula almacenada en el slot i
+                long recordOffset = dis.readLong(); // offset del registro en users.dat
 
                 if (cc == ccBuscada) {
+                    // Salto directo al registro en users.dat usando el offset del slot
                     users.seek(recordOffset);
                     long   foundCc     = users.readLong();
                     String foundNombre = users.readUTF();
@@ -272,7 +273,7 @@ public class ExtendibleHashing {
                 }
             }
         }
-        return null;
+        return null; // la CC no existe en el índice
     }
 
     /**
