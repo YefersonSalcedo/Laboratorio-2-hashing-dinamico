@@ -53,23 +53,6 @@ Estado del proyecto
 - Manejo robusto de archivos data/ (validación de integridad).
 - Comparación de tiempos (Hashing vs Búsqueda secuencial).
 
-Cambios recientes (última actualización)
-- **Corrección de literales de string:** Se arreglaron saltos de línea partidos en el menú y resultados de búsqueda.
-- **Validación robusta de archivos:** El programa ahora verifica que los archivos `data/` tengan el tamaño mínimo esperado antes de usarlos, detectando corrupción.
-- **Manejo mejorado de excepciones:** Se evita que EOFException genere mensajes null al registrar usuarios.
-- **Gestión de data/:** Los archivos `.dat` están ahora en `.gitignore` para no subirse al repositorio (se regeneran en cada ejecución).
-
-Requisitos
-Java 17 o superior recomendado.
-No usar bases de datos externas.
-Ejecutar desde consola.
-Compilación y ejecución
-Si los archivos están en `src/`:
-```bash
-javac src/*.java
-java -cp src Main
-```
-
 **Nota:** La primera ejecución (o después de opción 4 "Reiniciar archivos") inicializará automáticamente los archivos data/ necesarios.
 Menú del programa
 Registrar usuario
