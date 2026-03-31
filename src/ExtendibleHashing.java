@@ -1,3 +1,4 @@
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -30,7 +31,7 @@ import java.nio.file.Path;
  *    Los registros se escriben al final del archivo.
  *    El "recordOffset" guardado en el índice apunta al byte donde inicia cada registro.
  *---------------------------------------------------------------------------------------------------------
- *  directory.dat → Directorio de punteros al área de buckets.
+ *  directory.dat -> Directorio de punteros al área de buckets.
  *
  *    Byte 0..7 : profundidad global (long).
  *                Indica cuántos bits menos significativos de la CC se usan
@@ -43,11 +44,11 @@ import java.nio.file.Path;
  *                se obtiene un índice [0, 2^depth - 1], y se lee la entrada en: posición = 8 + índice × 8
  *
  *                Ejemplo con globalDepth=2 y CC=1234565 → hash → índice 01:
- *                  byte  0.. 7  →  2          (globalDepth)
- *                  byte  8..15  →  0          (dir[00] → bucket en offset   0 de buckets.dat)
- *                  byte 16..23  →  80         (dir[01] → bucket en offset  80) ← esta CC va aquí
- *                  byte 24..31  →  160        (dir[10] → bucket en offset 160)
- *                  byte 32..39  →  80         (dir[11] → bucket en offset  80) ← alias
+ *                  byte  0.. 7  ->  2          (globalDepth)
+ *                  byte  8..15  ->  0          (dir[00] -> bucket en offset   0 de buckets.dat)
+ *                  byte 16..23  ->  80         (dir[01] -> bucket en offset  80) <- esta CC va aquí
+ *                  byte 24..31  ->  160        (dir[10] -> bucket en offset 160)
+ *                  byte 32..39  ->  80         (dir[11] -> bucket en offset  80) <- alias
  *
  *    ALIAS: varias entradas pueden apuntar al MISMO bucket.
  *                Ocurre justo después de duplicarDirectorio(): el directorio dobla su
@@ -236,25 +237,33 @@ public class ExtendibleHashing {
      * @return Usuario encontrado, o null si no existe.
      */
     public Usuario buscar(long ccBuscada) throws IOException {
-
         int  globalDepth  = leerProfundidadGlobal();
-        int  idx          = hash(ccBuscada, globalDepth); // índice en el directorio
-        long bucketOffset = leerEntradaDirectorio(idx);   // offset del bucket en buckets.dat
+        int  idx          = hash(ccBuscada, globalDepth);
+        long bucketOffset = leerEntradaDirectorio(idx);
 
         try (RandomAccessFile bkts  = new RandomAccessFile(BUCKETS_FILE, "r");
-             RandomAccessFile users = new RandomAccessFile(USERS_FILE, "r")) {
+            RandomAccessFile users = new RandomAccessFile(USERS_FILE, "r")) {
 
             bkts.seek(bucketOffset);
-            bkts.readLong(); // saltar localDepth (no se necesita aquí)
-            long count = bkts.readLong(); // número de slots ocupados en este bucket
 
-            // Recorrer solo los slots ocupados del bucket (máximo BUCKET_SIZE)
+            // Calcular el tamaño del bucket en bytes y leerlo de golpe
+            // localDepth (8) + count (8) + BUCKET_SIZE * (cc + offset) (8+8 cada slot)
+            int bucketBytes = 8 + 8 + BUCKET_SIZE * 16;
+            byte[] buf = new byte[bucketBytes];
+            bkts.readFully(buf);  // UNA sola syscall
+
+            // Parsear desde el buffer en memoria
+            DataInputStream dis = new DataInputStream(
+                new java.io.ByteArrayInputStream(buf)
+            );
+            dis.readLong();           // saltar localDepth
+            long count = dis.readLong();
+
             for (int i = 0; i < count; i++) {
-                long cc           = bkts.readLong(); // cédula del slot i
-                long recordOffset = bkts.readLong(); // offset del registro en users.dat
+                long cc           = dis.readLong();
+                long recordOffset = dis.readLong();
 
                 if (cc == ccBuscada) {
-                    // Encontrado: saltar directamente al registro en users.dat
                     users.seek(recordOffset);
                     long   foundCc     = users.readLong();
                     String foundNombre = users.readUTF();
@@ -263,7 +272,7 @@ public class ExtendibleHashing {
                 }
             }
         }
-        return null; // la CC no está en el índice
+        return null;
     }
 
     /**
@@ -756,7 +765,7 @@ public class ExtendibleHashing {
 
                 // Posicionar el cursor del archivo al final del bucket
                 // para que la próxima lectura de bkts sea coherente.
-                bkts.seek(bktOffset + BUCKET_SIZE);
+                bkts.seek(bktOffset + BUCKET_BYTES);
             }
         }
         System.out.println("==================================================");
