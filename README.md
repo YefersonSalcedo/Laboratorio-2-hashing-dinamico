@@ -1,21 +1,28 @@
-Laboratorio #2 - Hashing Dinámico vs Búsqueda Secuencial
+# Laboratorio #2 - Hashing Dinámico vs Búsqueda Secuencial
 
-Integrantes:
+**Integrantes:**
+- Jonathan Alzate Castaño
+- Yeferson Alexis Salcedo Preciado
+- Samuel Velásquez Berrio
 
-Jonathan Alzate
+---
 
-Yeferson Alexis Salcedo
+## Objetivo
 
-Samuel Velásquez Berrio
+Desarrollar un sistema de registro y búsqueda de usuarios que compare dos métodos de acceso a datos:
 
+| Método | Descripción |
+|---|---|
+| **Extendible Hashing** | Búsqueda indexada mediante estructura dinámica |
+| **Búsqueda Secuencial** | Recorrido lineal del archivo de datos |
 
-Objetivo
-Desarrollar un sistema de registro y búsqueda de usuarios que permita comparar dos métodos:
-Extendible Hashing para búsqueda indexada.
-Búsqueda secuencial para recorrido lineal del archivo.
 La cédula (`cc`) es la clave principal. No se permiten registros duplicados.
-Estructura del proyecto
-```text
+
+---
+
+## Estructura del proyecto
+
+```
 src/
   Main.java
   ExtendibleHashing.java
@@ -23,63 +30,69 @@ src/
   Usuario.java
 
 data/
-  users.dat
-  directory.dat
-  buckets.dat
+  users.dat        <- registros completos de usuarios
+  directory.dat    <- directorio del índice hash
+  buckets.dat      <- buckets del índice hash
 ```
-Cómo funciona
-1. Registro
-Cuando se registra un usuario:
-Se guarda el registro completo en `users.dat`.
-Se inserta la cédula en el índice de `ExtendibleHashing`.
-Si la cédula ya existe, el sistema rechaza la inserción.
-2. Búsqueda
-Cuando se busca una cédula:
-Se realiza una búsqueda usando Extendible Hashing.
-Se realiza la misma búsqueda usando Sequential Search.
-Se muestra el tiempo de cada método en milisegundos.
-Idea de Extendible Hashing
-El índice usa:
-un directorio con punteros,
-y buckets donde se almacenan los registros indexados.
-Si un bucket se llena:
-se divide el bucket,
-si hace falta, se duplica el directorio,
-y luego se redistribuyen los datos.
-Esto hace que la búsqueda sea más rápida que revisar todos los registros uno por uno.
-Búsqueda secuencial
-Este método recorre `users.dat` desde el inicio hasta encontrar la cédula buscada.
-Es más simple de implementar, pero con muchos registros suele ser más lento.
-Estado del proyecto
-- Compilación exitosa sin errores.
-- Funcionalidad completa de registro y búsqueda.
-- Manejo robusto de archivos data/ (validación de integridad).
-- Comparación de tiempos (Hashing vs Búsqueda secuencial).
 
-**Nota:** La primera ejecución (o después de opción 4 "Reiniciar archivos") inicializará automáticamente los archivos data/ necesarios.
-Menú del programa
-Registrar usuario
-Buscar usuario
-Mostrar estado del hash
-Reiniciar archivos
-Salir
-Ejemplo de salida
-```text
+---
+
+## Cómo funciona
+
+### Registro de usuario
+1. El registro completo se guarda en `users.dat`.
+2. La cédula se inserta en el índice de `ExtendibleHashing`.
+3. Si la cédula ya existe, el sistema rechaza la inserción.
+
+### Búsqueda de usuario
+1. Se ejecuta la búsqueda con **Extendible Hashing**.
+2. Se ejecuta la misma búsqueda con **Búsqueda Secuencial**.
+3. Se muestra el tiempo de cada método en milisegundos.
+
+---
+
+## Extendible Hashing
+
+El índice está compuesto por:
+- Un **directorio** con punteros a buckets.
+- **Buckets** donde se almacenan las entradas indexadas `(cc, offset)`.
+
+Cuando un bucket se llena:
+1. Se **divide** el bucket.
+2. Si es necesario, se **duplica** el directorio.
+3. Se **redistribuyen** los datos entre los nuevos buckets.
+
+Esto garantiza que la búsqueda nunca compare más de `BUCKET_SIZE` entradas, sin importar cuántos usuarios estén registrados.
+
+## Búsqueda Secuencial
+
+Recorre `users.dat` desde el inicio hasta encontrar la cédula buscada. Es más simple de implementar, pero su tiempo crece linealmente con la cantidad de registros.
+
+---
+
+## Menú del programa
+
+```
+===== LABORATORIO HASHING DINÁMICO =====
+1. Registrar usuario
+2. Buscar usuario
+3. Mostrar estado del hash
+4. Reiniciar archivos
+5. Generar usuarios automáticamente
+6. Salir
+```
+
+> **Nota:** La primera ejecución (o después de usar la opción 4) inicializa automáticamente los archivos `data/` necesarios.
+
+---
+
+## Ejemplo de salida
+
+```
 Usuario encontrado:
 Nombre: Juan
 CC: 12345
 Correo: juan@email.com
-Tiempo búsqueda (Hashing): 0.12 ms
-Tiempo búsqueda (Secuencial): 1.87 ms
+Tiempo búsqueda (Hashing):     0.12 ms
+Tiempo búsqueda (Secuencial):  1.87 ms
 ```
-Observaciones importantes
-La diferencia de tiempos se nota más cuando hay muchos datos.
-El rendimiento depende de la cantidad de registros y de la distribución de las cédulas.
-El laboratorio busca demostrar la ventaja del acceso indexado frente al recorrido lineal.
-Explicación para exposición
-Puedes explicar el proyecto así:
-Se registran usuarios.
-Cada usuario se guarda en un archivo.
-El hashing dinámico crea una estructura de acceso rápido.
-La búsqueda secuencial revisa uno por uno.
-Se comparan tiempos para ver cuál es más eficiente.
